@@ -1,5 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
-import { BarChart3, Home, Map, Leaf, Bell } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BarChart3, Home, Leaf, LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
@@ -8,6 +10,13 @@ const links = [
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/50">
@@ -16,7 +25,9 @@ const Navbar = () => {
           <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
             <Leaf className="w-4 h-4 text-primary" />
           </div>
-          <span className="font-bold text-foreground text-sm tracking-tight">SmartTourism<span className="text-primary">.AI</span></span>
+          <span className="font-bold text-foreground text-sm tracking-tight">
+            SmartTourism<span className="text-primary">.AI</span>
+          </span>
         </Link>
 
         <div className="flex items-center gap-1">
@@ -35,6 +46,33 @@ const Navbar = () => {
               </Link>
             );
           })}
+
+          {user ? (
+            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border/50">
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/20">
+                <User className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-xs text-foreground font-medium max-w-[100px] truncate">
+                  {profile?.display_name || user.email?.split("@")[0]}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="h-7 px-2 text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-2 ml-2 px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </nav>
