@@ -14,16 +14,228 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          organization: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          organization?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          organization?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          priority: number
+          title: string
+          zone_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          title: string
+          zone_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          title?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "tourism_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tourism_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          message: string
+          severity: string
+          title: string
+          zone_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message: string
+          severity?: string
+          title: string
+          zone_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          severity?: string
+          title?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tourism_alerts_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "tourism_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tourism_analytics: {
+        Row: {
+          congestion_index: number
+          created_at: string
+          environmental_stress: number
+          id: string
+          predicted_count: number
+          snapshot_date: string
+          tourist_count: number
+          waste_factor: number
+          zone_id: string | null
+        }
+        Insert: {
+          congestion_index?: number
+          created_at?: string
+          environmental_stress?: number
+          id?: string
+          predicted_count?: number
+          snapshot_date?: string
+          tourist_count?: number
+          waste_factor?: number
+          zone_id?: string | null
+        }
+        Update: {
+          congestion_index?: number
+          created_at?: string
+          environmental_stress?: number
+          id?: string
+          predicted_count?: number
+          snapshot_date?: string
+          tourist_count?: number
+          waste_factor?: number
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tourism_analytics_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "tourism_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tourism_zones: {
+        Row: {
+          created_at: string
+          density_percent: number
+          eco_score: number
+          id: string
+          infrastructure_capacity: number
+          latitude: number
+          longitude: number
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          density_percent?: number
+          eco_score?: number
+          id?: string
+          infrastructure_capacity?: number
+          latitude: number
+          longitude: number
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          density_percent?: number
+          eco_score?: number
+          id?: string
+          infrastructure_capacity?: number
+          latitude?: number
+          longitude?: number
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "policymaker" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +362,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "policymaker", "viewer"],
+    },
   },
 } as const
