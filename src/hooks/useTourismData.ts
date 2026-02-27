@@ -1,8 +1,35 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
-export const useTourismZones = () =>
-  useQuery({
+export const useTourismZones = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Realtime subscription for live updates
+    const channel = supabase
+      .channel("tourism_zones_realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tourism_zones" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["tourism_zones"] });
+        }
+      )
+      .subscribe();
+
+    // Polling fallback every 30 seconds
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["tourism_zones"] });
+    }, 30000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [queryClient]);
+
+  return useQuery({
     queryKey: ["tourism_zones"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -12,7 +39,9 @@ export const useTourismZones = () =>
       if (error) throw error;
       return data;
     },
+    refetchInterval: 30000,
   });
+};
 
 export const useTourismAlerts = () =>
   useQuery({

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./map.css";
 import { useTourismZones } from "@/hooks/useTourismData";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,14 @@ const statusLabel: Record<string, string> = {
 };
 
 const TourismMap = () => {
-  const { data: zones, isLoading } = useTourismZones();
+  const { data: zones, isLoading, dataUpdatedAt } = useTourismZones();
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    if (dataUpdatedAt) {
+      setLastUpdated(new Date(dataUpdatedAt).toLocaleTimeString());
+    }
+  }, [dataUpdatedAt]);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
 
@@ -153,16 +160,25 @@ const TourismMap = () => {
     <div className="glass-card rounded-xl p-6 col-span-full">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-foreground font-semibold text-lg">Global Tourism Congestion Map</h3>
-        <div className="flex items-center gap-3">
-          {Object.entries(statusLabel).map(([key, label]) => (
-            <div key={key} className="flex items-center gap-1.5">
-              <div
-                className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: statusColor[key] }}
-              />
-              <span className="text-muted-foreground text-xs">{label}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-[hsl(var(--chart-2))]"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--chart-2))]"></span>
+            </span>
+            <span className="text-muted-foreground text-xs">Live · {lastUpdated || "–"}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {Object.entries(statusLabel).map(([key, label]) => (
+              <div key={key} className="flex items-center gap-1.5">
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: statusColor[key] }}
+                />
+                <span className="text-muted-foreground text-xs">{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <p className="text-muted-foreground text-sm mb-4">
