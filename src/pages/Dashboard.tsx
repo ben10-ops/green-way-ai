@@ -7,6 +7,7 @@ import ESIGauge from "@/components/ESIGauge";
 import TouristClustering from "@/components/TouristClustering";
 import AlertsPanel from "@/components/AlertsPanel";
 import Navbar from "@/components/Navbar";
+import TourismMap from "@/components/TourismMap";
 import { useKPIStats } from "@/hooks/useTourismData";
 
 const Dashboard = () => {
@@ -67,6 +68,10 @@ const Dashboard = () => {
           <ESIGauge />
           <TouristClustering />
           <AlertsPanel />
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 mb-5">
+          <TourismMap />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
