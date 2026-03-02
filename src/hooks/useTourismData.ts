@@ -6,19 +6,14 @@ export const useTourismZones = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Realtime subscription for live updates
     const channel = supabase
       .channel("tourism_zones_realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tourism_zones" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["tourism_zones"] });
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "tourism_zones" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["tourism_zones"] });
+        queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+      })
       .subscribe();
 
-    // Polling fallback every 30 seconds
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ["tourism_zones"] });
     }, 30000);
@@ -43,8 +38,29 @@ export const useTourismZones = () => {
   });
 };
 
-export const useTourismAlerts = () =>
-  useQuery({
+export const useTourismAlerts = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("tourism_alerts_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "tourism_alerts" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["tourism_alerts"] });
+        queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+      })
+      .subscribe();
+
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["tourism_alerts"] });
+    }, 30000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [queryClient]);
+
+  return useQuery({
     queryKey: ["tourism_alerts"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -55,10 +71,32 @@ export const useTourismAlerts = () =>
       if (error) throw error;
       return data;
     },
+    refetchInterval: 30000,
   });
+};
 
-export const useRecommendations = () =>
-  useQuery({
+export const useRecommendations = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("recommendations_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "recommendations" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["recommendations"] });
+      })
+      .subscribe();
+
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["recommendations"] });
+    }, 30000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [queryClient]);
+
+  return useQuery({
     queryKey: ["recommendations"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,10 +107,33 @@ export const useRecommendations = () =>
       if (error) throw error;
       return data;
     },
+    refetchInterval: 30000,
   });
+};
 
-export const useTourismAnalytics = (days = 30) =>
-  useQuery({
+export const useTourismAnalytics = (days = 30) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`tourism_analytics_realtime_${days}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tourism_analytics" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["tourism_analytics"] });
+        queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+      })
+      .subscribe();
+
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["tourism_analytics", days] });
+    }, 30000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [queryClient, days]);
+
+  return useQuery({
     queryKey: ["tourism_analytics", days],
     queryFn: async () => {
       const since = new Date();
@@ -85,10 +146,38 @@ export const useTourismAnalytics = (days = 30) =>
       if (error) throw error;
       return data;
     },
+    refetchInterval: 30000,
   });
+};
 
-export const useKPIStats = () =>
-  useQuery({
+export const useKPIStats = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("kpi_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "tourism_zones" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "tourism_analytics" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "tourism_alerts" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+      })
+      .subscribe();
+
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["kpi_stats"] });
+    }, 30000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [queryClient]);
+
+  return useQuery({
     queryKey: ["kpi_stats"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
@@ -121,4 +210,6 @@ export const useKPIStats = () =>
         activeAlerts: alertCount ?? 3,
       };
     },
+    refetchInterval: 30000,
   });
+};
