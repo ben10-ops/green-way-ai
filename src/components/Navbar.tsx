@@ -1,22 +1,25 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BarChart3, Home, Leaf, LogIn, LogOut, User } from "lucide-react";
+import { BarChart3, Home, Leaf, LogIn, LogOut, Shield, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-
-const links = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/dashboard", label: "Dashboard", icon: BarChart3 },
-];
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, userRole, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
+
+  const links = [
+    { to: "/", label: "Home", icon: Home },
+    { to: "/dashboard", label: "Dashboard", icon: BarChart3 },
+    ...(userRole === "admin" || userRole === "policymaker"
+      ? [{ to: "/admin", label: "Admin", icon: Shield }]
+      : []),
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/50">
